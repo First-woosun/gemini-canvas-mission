@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>안드로이드 개발자를 위한 코틀린 필수 문법 20선</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Prism.js CSS (Code Highlighting Theme) -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        /* 커스텀 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8; 
+        }
+        .active-nav {
+            background-color: #ede9fe; /* Tailwind purple-100 */
+            color: #6d28d9; /* Tailwind purple-700 */
+            font-weight: 700;
+            border-left: 4px solid #7c3aed; /* Tailwind purple-600 */
+        }
+        .nav-item {
+            transition: all 0.2s ease-in-out;
+            border-left: 4px solid transparent;
+        }
+        .nav-item:hover:not(.active-nav) {
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm z-10 p-4 border-b border-gray-200 shrink-0">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <svg class="w-8 h-8" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M24 24H0V0h24L12 12Z" fill="url(#kotlin-gradient)"/>
+                    <defs>
+                        <linearGradient id="kotlin-gradient" x1="24" y1="0" x2="0" y2="24" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stop-color="#E44857"/>
+                            <stop offset="47%" stop-color="#C711E1"/>
+                            <stop offset="100%" stop-color="#7F52FF"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <h1 class="text-xl font-bold text-gray-900">안드로이드 코틀린 필수 문법 20</h1>
+            </div>
+            <div class="text-sm text-gray-500">
+                Kotlin Official Documentation Base
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="flex flex-1 overflow-hidden max-w-7xl mx-auto w-full">
+        
+        <!-- Sidebar (목차) -->
+        <aside class="w-full md:w-80 bg-white border-r border-gray-200 flex flex-col h-full overflow-y-auto shrink-0 transition-transform duration-300 z-0" id="sidebar">
+            <div class="p-4 border-b border-gray-100 bg-gray-50 sticky top-0">
+                <h2 class="font-bold text-gray-700">목차 (Contents)</h2>
+            </div>
+            <nav id="nav-list" class="flex flex-col py-2">
+                <!-- JavaScript로 동적 생성됨 -->
+            </nav>
+        </aside>
+
+        <!-- Main Content (본문) -->
+        <main class="flex-1 h-full overflow-y-auto p-6 md:p-10 bg-white" id="main-content">
+            <div class="max-w-3xl mx-auto" id="content-container">
+                <!-- JavaScript로 동적 생성됨 -->
+                <div class="flex h-full items-center justify-center text-gray-400">
+                    좌측 목차에서 항목을 선택해주세요.
+                </div>
+            </div>
+        </main>
+        
+    </div>
+
+    <!-- Prism.js (Core & Kotlin language support) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-kotlin.min.js"></script>
+
+    <script>
+        // 코틀린 필수 문법 20가지 JSON 데이터
+        const kotlinData = [
+            {
+                id: 1,
+                title: "1. 변수 선언 (val, var)",
+                summary: "읽기 전용 변수와 변경 가능한 변수를 구분하여 선언합니다.",
+                description: "Kotlin에서는 `val`(value)를 사용하여 불변(Immutable) 변수를, `var`(variable)을 사용하여 가변(Mutable) 변수를 선언합니다. 안드로이드 개발 시 상태 변경이 필요 없는 UI 컴포넌트나 상수는 `val`로 선언하여 부작용을 방지하는 것이 권장됩니다.",
+                codeSnippet: `// 읽기 전용 변수 (Java의 final과 유사)
+val appName: String = "My Android App"
+
+// 타입 추론이 가능하여 타입 생략 가능
+val version = 1.0 
+
+// 변경 가능한 변수
+var clickCount = 0
+clickCount += 1`
+            },
+            {
+                id: 2,
+                title: "2. 널 안전성 (Null Safety)",
+                summary: "NullPointerException(NPE)을 방지하기 위한 언어적 차원의 지원입니다.",
+                description: "코틀린의 타입 시스템은 기본적으로 null을 허용하지 않습니다. null을 허용하려면 타입 뒤에 `?`를 붙여야 합니다. 안드로이드에서 뷰를 찾지 못했거나 인텐트 엑스트라가 없을 때 안전하게 처리하기 위해 `?.` (안전 호출) 및 `?:` (엘비스 연산자)를 매우 자주 사용합니다.",
+                codeSnippet: `var nullableName: String? = "Android"
+nullableName = null // 가능
+
+// 안전 호출 (Safe Call) - null이면 null 반환, 아니면 길이 반환
+val length: Int? = nullableName?.length
+
+// 엘비스 연산자 (Elvis Operator) - null일 경우 기본값 지정
+val safeLength: Int = nullableName?.length ?: 0
+
+// 널 아님 단언 (Not-null Assertion) - 확실할 때만 사용 (NPE 발생 가능)
+val absoluteLength: Int = nullableName!!.length`
+            },
+            {
+                id: 3,
+                title: "3. 문자열 템플릿 (String Templates)",
+                summary: "문자열 내부에 변수나 식의 값을 쉽게 삽입할 수 있습니다.",
+                description: "Java의 `String.format()`이나 `+` 연산자 대신 문자열 내에서 `$변수명` 또는 `${표현식}`을 사용하여 직관적으로 문자열을 구성합니다. 안드로이드의 TextView에 텍스트를 세팅하거나 로그를 출력할 때 매우 유용합니다.",
+                codeSnippet: `val userName = "User"
+val unreadMessages = 5
+
+// 변수 삽입
+println("Hello, $userName!")
+
+// 표현식 삽입
+val message = "You have $unreadMessages new message\${if (unreadMessages > 1) "s" else ""}."
+// 출력: You have 5 new messages.`
+            },
+            {
+                id: 4,
+                title: "4. 조건식 (if, when)",
+                summary: "코틀린의 if와 when은 값을 반환하는 표현식(Expression)입니다.",
+                description: "코틀린에서는 `if`문을 변수에 직접 할당할 수 있습니다. 또한 Java의 `switch`문을 대체하는 강력한 `when` 표현식이 있습니다. 안드로이드에서 RecyclerView의 뷰 타입 분기나 ViewModel의 상태(State) 처리 시 `when`이 널리 사용됩니다.",
+                codeSnippet: `val score = 85
+
+// if 표현식
+val result = if (score >= 80) "Pass" else "Fail"
+
+// when 표현식 (강력한 switch)
+val grade = when (score) {
+    in 90..100 -> "A"
+    in 80..89 -> "B"
+    70, 75 -> "C"
+    else -> "F"
+}
+
+// 인자 없는 when
+val stateMessage = when {
+    score > 90 -> "Excellent"
+    score > 50 -> "Good"
+    else -> "Try harder"
+}`
+            },
+            {
+                id: 5,
+                title: "5. 함수 기본값과 네임드 인자",
+                summary: "함수 매개변수에 기본값을 주거나, 호출 시 이름을 명시할 수 있습니다.",
+                description: "오버로딩(Overloading) 코드를 대폭 줄여줍니다. 안드로이드의 커스텀 뷰 생성자나 여러 설정값이 필요한 빌더 패턴 대신, 기본값을 가진 함수 하나로 깔끔하게 처리할 수 있습니다.",
+                codeSnippet: `// 매개변수 기본값 지정
+fun createProfile(name: String, age: Int = 0, isPublic: Boolean = true) {
+    // ...
+}
+
+// 기본값이 있으므로 name만 전달 가능
+createProfile("Alice")
+
+// 네임드 인자를 사용하여 특정 매개변수만 명시적으로 전달
+createProfile("Bob", isPublic = false)`
+            },
+            {
+                id: 6,
+                title: "6. 단일 표현식 함수 (Single-Expression)",
+                summary: "함수 본문이 단일 식일 경우 중괄호와 return을 생략할 수 있습니다.",
+                description: "코드를 간결하게 유지하는 데 큰 도움이 됩니다. 안드로이드 ViewModel에서 데이터를 반환하는 간단한 Getter 함수나 어댑터(Adapter)의 아이템 개수를 반환하는 함수 등에 자주 쓰입니다.",
+                codeSnippet: `// 일반적인 함수 선언
+fun getGreeting(name: String): String {
+    return "Hello, $name"
+}
+
+// 단일 표현식 함수 (= 와 타입 추론 사용)
+fun getGreetingSingle(name: String) = "Hello, $name"
+
+// when과 결합하여 강력한 단일 표현식 구성
+fun getVisibility(isVisible: Boolean) = if (isVisible) View.VISIBLE else View.GONE`
+            },
+            {
+                id: 7,
+                title: "7. 데이터 클래스 (Data Classes)",
+                summary: "데이터 보관을 목적으로 하는 클래스를 쉽게 만듭니다.",
+                description: "`data` 키워드 하나로 `equals()`, `hashCode()`, `toString()`, `copy()`, `componentN()` 함수를 컴파일러가 자동 생성합니다. 안드로이드의 Room DB 엔티티나 Retrofit의 API 응답 모델, UI 상태 홀더로 완벽합니다.",
+                codeSnippet: `// 데이터 클래스 선언
+data class User(val id: Int, val name: String, val email: String)
+
+val user1 = User(1, "Alice", "alice@example.com")
+
+// toString() 자동 지원
+println(user1) // User(id=1, name=Alice, email=alice@example.com)
+
+// copy()를 이용한 불변 객체 복사 및 변경
+val user2 = user1.copy(name = "Alice Updated")`
+            },
+            {
+                id: 8,
+                title: "8. 지연 초기화 (lateinit, by lazy)",
+                summary: "변수의 초기화를 실제 사용 시점이나 특정 시점으로 미룹니다.",
+                description: "안드로이드 컴포넌트(Activity, Fragment)는 생성자에서 뷰나 의존성을 초기화할 수 없으므로 `onCreate()` 등 생명주기 메서드에서 초기화해야 합니다. 이때 Nullable을 피하기 위해 `lateinit var` (주로 View나 Dagger 주입)와 `val ... by lazy` (처음 접근 시 초기화)를 사용합니다.",
+                codeSnippet: `class MainActivity : AppCompatActivity() {
+    
+    // 1. lateinit var: 기본 타입(Int, Boolean 등)은 불가, 이후에 반드시 초기화해야 함
+    private lateinit var myTextView: TextView
+
+    // 2. by lazy: val에만 사용 가능, 처음 호출될 때 블록 내부가 실행되어 초기화됨
+    private val apiService: ApiService by lazy {
+        RetrofitClient.createService()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        myTextView = findViewById(R.id.text_view) // 여기서 초기화
+        myTextView.text = "Hello"
+    }
+}`
+            },
+            {
+                id: 9,
+                title: "9. 확장 함수 (Extension Functions)",
+                summary: "기존 클래스의 코드를 수정하지 않고 새로운 함수를 추가합니다.",
+                description: "상속이나 데코레이터 패턴 없이도 라이브러리 클래스나 안드로이드 프레임워크 클래스(`Context`, `View` 등)에 유틸리티 함수를 직관적으로 추가할 수 있습니다. 안드로이드 개발의 생산성을 극대화하는 기능입니다.",
+                codeSnippet: `// Context 클래스에 토스트 메시지를 띄우는 확장 함수 추가
+fun Context.showToast(message: String, duration: Int = Toast.LENGTH_SHORT) {
+    Toast.makeText(this, message, duration).show()
+}
+
+// View 클래스에 보이기/숨기기 확장 함수 추가
+fun View.visible() {
+    this.visibility = View.VISIBLE
+}
+
+// Activity 등에서 바로 사용 가능
+// showToast("데이터가 저장되었습니다.")
+// myButton.visible()`
+            },
+            {
+                id: 10,
+                title: "10. 스코프 함수 (Scope Functions)",
+                summary: "객체 컨텍스트 내에서 코드 블록을 실행하기 위한 함수들입니다.",
+                description: "`let`, `run`, `with`, `apply`, `also`가 있습니다. 객체의 초기화, Null 체크 후 실행, 임시 스코프 생성 등에 사용됩니다. 안드로이드에서는 View를 초기화할 때 `apply`, Intent를 설정할 때 `apply`, Nullable 객체 처리에 `let`이 빈번하게 사용됩니다.",
+                codeSnippet: `// 1. apply: 수신 객체 내부 속성 변경 후 수신 객체 자체를 반환 (초기화에 유용)
+val textView = TextView(context).apply {
+    text = "Hello"
+    textSize = 16f
+    setTextColor(Color.BLACK)
+}
+
+// 2. let: Null 체크 후 블록 실행, 마지막 줄의 결과를 반환
+val intent: Intent? = getIntent()
+intent?.let {
+    // it은 intent를 가리킴 (Non-null로 스마트 캐스트 됨)
+    val id = it.getStringExtra("ID")
+    setupUI(id)
+}`
+            },
+            {
+                id: 11,
+                title: "11. 싱글톤과 컴패니언 객체 (object)",
+                summary: "클래스 인스턴스를 하나만 생성하거나 정적 멤버를 정의합니다.",
+                description: "코틀린에서는 `object` 키워드로 스레드 안전한 싱글톤을 쉽게 만들 수 있습니다. Java의 `static` 키워드 대신 클래스 내부에 `companion object`를 사용하여 팩토리 메서드나 상수를 정의합니다. 안드로이드의 `Fragment.newInstance()` 패턴이나 `Retrofit` 싱글톤 객체에 사용됩니다.",
+                codeSnippet: `// 싱글톤 객체 선언 (전역 접근 가능)
+object NetworkManager {
+    val baseUrl = "https://api.example.com"
+    fun fetch() { /*...*/ }
+}
+
+class UserFragment : Fragment() {
+    // Java의 static과 유사한 companion object
+    companion object {
+        const val ARG_ID = "USER_ID"
+
+        fun newInstance(userId: String) = UserFragment().apply {
+            arguments = Bundle().apply { putString(ARG_ID, userId) }
+        }
+    }
+}`
+            },
+            {
+                id: 12,
+                title: "12. 람다와 고차 함수",
+                summary: "함수를 매개변수로 받거나 반환할 수 있는 기능입니다.",
+                description: "안드로이드의 클릭 리스너(`setOnClickListener`), 콜백 처리 등에서 보일러플레이트 코드를 줄여줍니다. 마지막 매개변수가 함수일 경우 소괄호 밖으로 람다를 뺄 수 있는(Trailing Lambda) 문법 덕분에 코드가 매우 깔끔해집니다.",
+                codeSnippet: `// 고차 함수 정의 (함수를 파라미터로 받음)
+fun performOperation(x: Int, y: Int, operation: (Int, Int) -> Int): Int {
+    return operation(x, y)
+}
+
+// 람다를 사용한 호출
+val sum = performOperation(5, 3, { a, b -> a + b })
+
+// Trailing Lambda (마지막 인자가 람다일 경우 괄호 밖으로 뺌)
+val product = performOperation(5, 3) { a, b ->
+    a * b
+}
+
+// 안드로이드 클릭 리스너 예시
+// button.setOnClickListener { view -> println("Clicked!") }`
+            },
+            {
+                id: 13,
+                title: "13. 코루틴 기초 (Coroutines)",
+                summary: "가볍고 효율적인 비동기 프로그래밍을 위한 기능입니다.",
+                description: "RxJava나 AsyncTask를 대체하는 안드로이드의 표준 비동기 처리 방식입니다. `suspend` 키워드를 사용하여 중단 가능한 함수를 만들고, `viewModelScope` 등을 통해 메인 스레드 블로킹 없이 네트워크 요청이나 DB 접근을 순차적인 코드처럼 작성합니다.",
+                codeSnippet: `// suspend 함수: 코루틴 내에서만 호출 가능하며 실행을 일시 중단할 수 있음
+suspend fun fetchUserData(): User {
+    // IO 스레드에서 백그라운드 작업 수행
+    return withContext(Dispatchers.IO) {
+        api.getUser() 
+    }
+}
+
+class UserViewModel : ViewModel() {
+    fun loadUser() {
+        // viewModelScope를 통해 코루틴 실행
+        viewModelScope.launch {
+            // 메인 스레드에서 UI 업데이트 코드처럼 작성되지만 블로킹되지 않음
+            val user = fetchUserData()
+            uiState.value = user
+        }
+    }
+}`
+            },
+            {
+                id: 14,
+                title: "14. 씰드 클래스 (Sealed Classes)",
+                summary: "상속받을 수 있는 하위 클래스의 종류를 제한합니다.",
+                description: "열거형(Enum)의 확장판입니다. 상태(State)를 표현할 때 매우 유용하며, `when` 표현식과 함께 사용하면 컴파일러가 모든 가능한 상태를 확인해주어 안전합니다. 안드로이드의 `UiState`(로딩, 성공, 에러) 모델링에 필수로 사용됩니다.",
+                codeSnippet: `// 씰드 클래스 선언 (이 파일 외부에서는 상속 불가)
+sealed class UiState {
+    object Loading : UiState() // 상태값이 없는 경우 object
+    data class Success(val data: List<String>) : UiState() // 데이터를 갖는 경우 data class
+    data class Error(val exception: Throwable) : UiState()
+}
+
+fun render(state: UiState) {
+    // 모든 상태를 분기했으므로 else가 필요 없음
+    when (state) {
+        is UiState.Loading -> showProgressBar()
+        is UiState.Success -> showData(state.data)
+        is UiState.Error -> showErrorDialog(state.exception)
+    }
+}`
+            },
+            {
+                id: 15,
+                title: "15. 컬렉션 함수 (Collections API)",
+                summary: "리스트, 맵 등의 데이터를 쉽게 변환하고 필터링합니다.",
+                description: "코틀린의 컬렉션은 불변(List)과 가변(MutableList)으로 나뉩니다. `map`, `filter`, `forEach`, `find` 등의 풍부한 고차 함수를 제공하여 안드로이드에서 어댑터에 넘길 데이터를 가공할 때 for 루프 없이 선언적으로 작성할 수 있습니다.",
+                codeSnippet: `val numbers = listOf(1, 2, 3, 4, 5, 6)
+
+// filter: 조건에 맞는 요소만 추출
+// map: 요소를 변환
+val evenSquares = numbers
+    .filter { it % 2 == 0 } // [2, 4, 6]
+    .map { it * it }        // [4, 16, 36]
+
+// forEach: 순회하며 작업 수행
+evenSquares.forEach { println(it) }
+
+// MutableList (변경 가능)
+val mutableList = mutableListOf("A", "B")
+mutableList.add("C")`
+            },
+            {
+                id: 16,
+                title: "16. 스마트 캐스트 (Smart Casts)",
+                summary: "타입 검사 후 컴파일러가 자동으로 타입을 변환해줍니다.",
+                description: "`is` 연산자로 타입을 확인하거나 `null`이 아님을 체크하면, 컴파일러가 해당 스코프 내에서 자동으로 변수를 해당 타입으로 캐스팅합니다. 안전한 캐스팅 연산자 `as?`와 함께 안드로이드 뷰 캐스팅이나 타입 분기 처리를 안전하게 만듭니다.",
+                codeSnippet: `fun printLength(obj: Any) {
+    // obj가 String인지 확인
+    if (obj is String) {
+        // 이 블록 안에서는 obj가 String으로 '스마트 캐스트'됨. 강제 캐스팅(as String) 불필요
+        println(obj.length)
+    } else {
+        println("Not a string")
+    }
+}
+
+// 안전한 캐스팅 (Safe Cast)
+// 형변환 실패 시 ClassCastException 대신 null 반환
+val str: String? = obj as? String`
+            },
+            {
+                id: 17,
+                title: "17. 구조 분해 선언 (Destructuring)",
+                summary: "객체의 속성들을 여러 변수에 한 번에 분해하여 할당합니다.",
+                description: "데이터 클래스나 Pair, Map의 엔트리 등을 다룰 때 코드를 간결하게 만들어줍니다. 여러 값을 반환해야 하는 함수에서 `Pair`나 `Triple`을 반환하고 이를 구조 분해로 받는 패턴이 종종 사용됩니다.",
+                codeSnippet: `// 데이터 클래스
+data class Location(val lat: Double, val lng: Double)
+
+val myLocation = Location(37.5665, 126.9780)
+
+// 구조 분해 선언으로 변수 두 개에 동시 할당
+val (latitude, longitude) = myLocation
+println("Lat: $latitude, Lng: $longitude")
+
+// Map 순회 시 유용
+val map = mapOf("Seoul" to "Korea", "Tokyo" to "Japan")
+for ((city, country) in map) {
+    println("$city is in $country")
+}`
+            },
+            {
+                id: 18,
+                title: "18. 타입 별칭 (Type Aliases)",
+                summary: "기존 타입에 새로운 대체 이름을 제공합니다.",
+                description: "제네릭이나 복잡한 함수 타입(Function Types)의 이름이 길어질 때 가독성을 높이기 위해 사용합니다. 복잡한 클릭 리스너나 중첩된 컬렉션 타입을 다룰 때 유용합니다.",
+                codeSnippet: `// 복잡한 함수 타입에 별칭 부여
+typealias ClickHandler = (View, Int) -> Unit
+
+// 사용 예시
+class MyAdapter(private val onClick: ClickHandler) {
+    // ...
+}
+
+// 중첩된 제네릭 타입에 별칭 부여
+typealias UserResponse = Result<List<User>>
+
+fun fetchUsers(): UserResponse {
+    // ...
+}`
+            },
+            {
+                id: 19,
+                title: "19. 인라인 함수 (Inline Functions)",
+                summary: "컴파일 시 함수 호출 부분을 함수의 본문 코드로 대체하여 성능을 높입니다.",
+                description: "람다를 매개변수로 받는 고차 함수는 호출될 때마다 익명 클래스 객체가 생성되어 메모리 오버헤드가 발생할 수 있습니다. `inline` 키워드를 붙이면 컴파일러가 코드를 호출부에 복사해 넣어 오버헤드를 없앱니다. 코틀린의 `let`, `apply` 등은 모두 inline 함수입니다.",
+                codeSnippet: `// inline 함수 선언
+inline fun measureTime(block: () -> Unit) {
+    val start = System.currentTimeMillis()
+    block() // 람다 실행
+    val end = System.currentTimeMillis()
+    println("Time taken: \${end - start} ms")
+}
+
+fun doWork() {
+    measureTime {
+        // 무거운 작업 수행
+        // 컴파일 시점에는 이 부분 코드가 measureTime 내부 로직과 합쳐져서 바이트코드로 생성됨
+    }
+}`
+            },
+            {
+                id: 20,
+                title: "20. 프로퍼티와 커스텀 접근자",
+                summary: "필드와 getter/setter를 하나로 묶어 프로퍼티로 제공합니다.",
+                description: "코틀린의 클래스 변수(프로퍼티)는 기본적으로 뒷받침하는 필드(backing field)와 접근자를 가집니다. `get()`, `set()`을 재정의하여 커스텀 로직을 넣을 수 있습니다. 안드로이드의 View 바인딩 객체 관리나 ViewModel에서 내부 상태와 외부 노출 상태를 다르게 할 때(Backing Property) 핵심적인 역할을 합니다.",
+                codeSnippet: `class Counter {
+    // 커스텀 setter를 가진 프로퍼티
+    var count = 0
+        set(value) {
+            if (value >= 0) {
+                field = value // field 키워드로 실제 값(Backing Field)에 접근
+            }
+        }
+}
+
+class MyViewModel : ViewModel() {
+    // Backing Property 패턴 (안드로이드에서 매우 흔함)
+    // 내부에선 변경 가능한 MutableLiveData 사용
+    private val _liveData = MutableLiveData<String>()
+    
+    // 외부에선 읽기 전용 LiveData로 노출 (커스텀 getter)
+    val liveData: LiveData<String>
+        get() = _liveData
+}`
+            }
+        ];
+
+        // DOM 요소 참조
+        const navList = document.getElementById('nav-list');
+        const contentContainer = document.getElementById('content-container');
+        let currentActiveItem = null;
+
+        // 사이드바 항목 렌더링
+        function renderSidebar() {
+            kotlinData.forEach((item, index) => {
+                const button = document.createElement('button');
+                button.className = 'nav-item w-full text-left px-4 py-3 text-sm text-gray-700 hover:text-gray-900 border-b border-gray-100 last:border-b-0 focus:outline-none';
+                button.textContent = item.title;
+                
+                // 클릭 이벤트
+                button.onclick = () => {
+                    // 활성화 상태 스타일 변경
+                    if (currentActiveItem) {
+                        currentActiveItem.classList.remove('active-nav');
+                    }
+                    button.classList.add('active-nav');
+                    currentActiveItem = button;
+
+                    // 본문 렌더링
+                    renderContent(item);
+                };
+
+                navList.appendChild(button);
+
+                // 첫 번째 항목 기본 선택
+                if (index === 0) {
+                    button.click();
+                }
+            });
+        }
+
+        // 본문 콘텐츠 렌더링
+        function renderContent(item) {
+            // HTML 구조 생성
+            const html = `
+                <div class="animate-fade-in">
+                    <span class="inline-block px-3 py-1 bg-purple-100 text-purple-700 text-xs font-semibold rounded-full mb-3">Topic ${item.id}</span>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-4">${item.title}</h2>
+                    
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded-r-lg">
+                        <p class="text-blue-800 font-medium">${item.summary}</p>
+                    </div>
+
+                    <div class="prose max-w-none mb-8">
+                        <p class="text-gray-600 leading-relaxed">${item.description.replace(/`([^`]+)`/g, '<code class="bg-gray-100 text-pink-600 px-1 py-0.5 rounded font-mono text-sm">$1</code>')}</p>
+                    </div>
+
+                    <div class="rounded-lg shadow-sm overflow-hidden bg-[#2d2d2d]">
+                        <div class="flex items-center px-4 py-2 bg-[#1e1e1e] border-b border-gray-700">
+                            <div class="flex gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            </div>
+                            <div class="ml-4 text-xs text-gray-400 font-mono">Example.kt</div>
+                        </div>
+                        <pre class="!m-0 !p-4 !bg-[#2d2d2d]"><code class="language-kotlin">${escapeHtml(item.codeSnippet)}</code></pre>
+                    </div>
+
+                    <!-- Gemini AI Chat Section -->
+                    <div class="mt-10 border-t border-gray-200 pt-6 pb-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                            <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                                </svg>
+                                Gemini AI 어시스턴트
+                            </h3>
+                            <button id="quiz-btn" class="px-4 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 shadow-sm">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                퀴즈 출제하기
+                            </button>
+                        </div>
+                        <div id="chat-history" class="bg-gray-50 border border-gray-200 rounded-lg h-64 overflow-y-auto p-4 mb-4 flex flex-col gap-3 scroll-smooth">
+                            <!-- Messages will be injected here -->
+                        </div>
+                        <div class="flex gap-2 relative">
+                            <input type="text" id="chat-input" class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm" placeholder="현재 문법에 대해 질문하거나 퀴즈를 요청해보세요...">
+                            <button id="send-btn" class="px-5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-lg transition-colors flex items-center gap-2 disabled:opacity-50">
+                                전송
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            contentContainer.innerHTML = html;
+            
+            // 본문 렌더링 후 Prism.js 문법 강조 재실행
+            Prism.highlightAll();
+
+            // --- Gemini Chat Logic ---
+            if (!item.chatHistory) {
+                // 카테고리별 초기 인사말 세팅
+                item.chatHistory = [
+                    { role: "model", text: `안녕하세요! **${item.title}**에 대해 궁금한 점이 있으신가요?` }
+                ];
+            }
+
+            const chatHistoryEl = document.getElementById('chat-history');
+            const chatInputEl = document.getElementById('chat-input');
+            const sendBtnEl = document.getElementById('send-btn');
+            const quizBtnEl = document.getElementById('quiz-btn');
+
+            // 대화창 렌더링 함수
+            function renderMessages() {
+                chatHistoryEl.innerHTML = '';
+                item.chatHistory.forEach(msg => {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`;
+                    
+                    const bubble = document.createElement('div');
+                    bubble.className = `max-w-[85%] rounded-lg px-4 py-2 text-sm leading-relaxed ${
+                        msg.role === 'user' 
+                        ? 'bg-purple-600 text-white rounded-br-none' 
+                        : 'bg-white border border-gray-200 text-gray-800 rounded-bl-none shadow-sm'
+                    }`;
+                    
+                    // 간단한 마크다운(굵은 글씨 및 줄바꿈) 처리
+                    let formattedText = msg.text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    formattedText = formattedText.replace(/\n/g, '<br>');
+                    
+                    bubble.innerHTML = formattedText;
+                    msgDiv.appendChild(bubble);
+                    chatHistoryEl.appendChild(msgDiv);
+                });
+                chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+            }
+
+            renderMessages();
+
+            // 메시지 전송 핸들러
+            async function handleSendMessage(text) {
+                if (!text.trim()) return;
+
+                item.chatHistory.push({ role: "user", text: text });
+                renderMessages();
+                chatInputEl.value = '';
+
+                // 전송 중 UI 잠금 및 로딩 표시
+                sendBtnEl.disabled = true;
+                chatInputEl.disabled = true;
+                quizBtnEl.disabled = true;
+                
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'flex justify-start text-sm text-gray-500 italic';
+                loadingDiv.innerHTML = '<div class="bg-gray-100 rounded-lg px-4 py-2 border border-gray-200">답변 생성 중...</div>';
+                loadingDiv.id = 'typing-indicator';
+                chatHistoryEl.appendChild(loadingDiv);
+                chatHistoryEl.scrollTop = chatHistoryEl.scrollHeight;
+
+                // 시스템 프롬프트: 현재 보고 있는 문법 주제를 주입
+                const systemInstruction = `당신은 친절한 안드로이드 코틀린 전문가입니다. 현재 사용자는 '${item.title}' 문법에 대해 학습 중입니다. 코틀린 공식 문서를 기반으로 정확하고 쉽게 답변해주세요.`;
+                
+                // 첫 인사말은 제외하고 실제 대화 내용만 API로 전송
+                const contents = item.chatHistory
+                    .filter((msg, idx) => !(idx === 0 && msg.role === 'model')) 
+                    .map(msg => ({
+                        role: msg.role === 'model' ? 'model' : 'user',
+                        parts: [{ text: msg.text }]
+                    }));
+
+                const reply = await callGeminiAPI(contents, systemInstruction);
+                
+                const indicator = document.getElementById('typing-indicator');
+                if (indicator) indicator.remove();
+
+                item.chatHistory.push({ role: "model", text: reply });
+                renderMessages();
+
+                // UI 잠금 해제
+                sendBtnEl.disabled = false;
+                chatInputEl.disabled = false;
+                quizBtnEl.disabled = false;
+                chatInputEl.focus();
+            }
+
+            sendBtnEl.onclick = () => handleSendMessage(chatInputEl.value);
+            chatInputEl.onkeypress = (e) => {
+                if (e.key === 'Enter') handleSendMessage(chatInputEl.value);
+            };
+
+            // 퀴즈 생성 버튼 이벤트
+            quizBtnEl.onclick = () => {
+                handleSendMessage("현재 문법에 대한 객관식 퀴즈 1문제를 출제해줘. 정답은 바로 알려주지 말고 문제와 보기만 제시해줘.");
+            };
+        }
+
+        // HTML 태그 이스케이프 함수 (코드 스니펫 안전한 렌더링)
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
+        }
+
+        // Gemini API 연동 설정
+        const apiKey = ""; // 런타임 환경에서 제공됨
+
+        async function callGeminiAPI(contents, systemInstruction) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: contents,
+                systemInstruction: { parts: [{ text: systemInstruction }] }
+            };
+
+            let delay = 1000;
+            // 지수 백오프 방식 적용 (재시도 최대 5회)
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "응답을 생성할 수 없습니다.";
+                } catch (error) {
+                    if (i === 4) return "오류가 발생했습니다. 잠시 후 다시 시도해주세요.";
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSidebar();
+        });
+    </script>
+</body>
+</html>
