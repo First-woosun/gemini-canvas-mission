@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>클래식 알까기</title>
+    <style>
+        :root {
+            --bg-color: #2c3e50;
+            --board-color: #e6b97e;
+            --line-color: #4a3721;
+            --black-stone: #222;
+            --white-stone: #fdfdfd;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: var(--bg-color);
+            font-family: 'Pretendard', sans-serif;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        /* 메인 레이아웃: 턴 표시기(좌) - 바둑판(중앙) - 점수 카드(우) */
+        #main-layout {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 20px;
+            position: relative;
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+            border: 4px solid #3d2b1f;
+            border-radius: 4px;
+            background-color: var(--board-color);
+        }
+
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+
+        /* 사이드 인디케이터 기본 스타일 */
+        .side-indicator {
+            padding: 25px 15px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            box-sizing: border-box;
+        }
+
+        /* 좌측 세로 턴 표시기 */
+        #turn-display {
+            writing-mode: vertical-rl;
+            text-orientation: keep-all;
+            background: rgba(0,0,0,0.4);
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 900;
+            letter-spacing: 5px;
+        }
+
+        #turn-display.active-black { 
+            background: #000; 
+            color: white; 
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        #turn-display.active-white { 
+            background: #fff; 
+            color: black; 
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        /* 우측 세로 점수 카드 (좌측과 대칭) */
+        #score-card {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            gap: 20px;
+        }
+
+        .score-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-label {
+            writing-mode: vertical-rl;
+            text-orientation: keep-all;
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            opacity: 0.8;
+        }
+
+        .count-num {
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: rgba(0,0,0,0.3);
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .divider {
+            width: 30px;
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+        }
+
+        #modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            display: none;
+            z-index: 100;
+        }
+
+        #modal h2 { margin-top: 0; color: #333; font-size: 2rem; }
+        #modal button {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .controls-hint {
+            margin-top: 25px;
+            color: #bdc3c7;
+            font-size: 1rem;
+            background: rgba(255,255,255,0.1);
+            padding: 5px 15px;
+            border-radius: 15px;
+        }
+
+        /* 반응형: 화면이 좁을 때 레이아웃 변경 */
+        @media (max-width: 800px) {
+            #main-layout {
+                flex-direction: column;
+            }
+            .side-indicator {
+                writing-mode: horizontal-tb;
+                min-height: auto;
+                width: 90%;
+                letter-spacing: 2px;
+                padding: 10px;
+                margin-bottom: 10px;
+                flex-direction: row;
+            }
+            #turn-display {
+                writing-mode: horizontal-tb;
+            }
+            #score-card {
+                flex-direction: row;
+                justify-content: space-around;
+                gap: 0;
+            }
+            .score-group {
+                flex-direction: row;
+            }
+            .score-label {
+                writing-mode: horizontal-tb;
+            }
+            .divider {
+                width: 1px;
+                height: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-layout">
+        <!-- 좌측: 턴 인디케이터 (세로) -->
+        <div id="turn-display" class="side-indicator active-black">흑돌 턴</div>
+        
+        <!-- 중앙: 게임판 -->
+        <div id="game-container">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- 우측: 점수 카드 (세로 배치로 대칭 형성) -->
+        <div id="score-card" class="side-indicator">
+            <div class="score-group">
+                <span class="score-label">흑돌</span>
+                <div id="black-count" class="count-num">7</div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div class="score-group">
+                <span class="score-label">백돌</span>
+                <div id="white-count" class="count-num">7</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-hint">돌을 드래그하여 조준 후 발사하세요!</div>
+
+    <div id="modal">
+        <h2 id="winner-text">승리!</h2>
+        <button onclick="resetGame()">다시 시작</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const turnDisplay = document.getElementById('turn-display');
+        const blackCountEl = document.getElementById('black-count');
+        const whiteCountEl = document.getElementById('white-count');
+        const modal = document.getElementById('modal');
+        const winnerText = document.getElementById('winner-text');
+
+        let boardSize = 0;
+        const GRID_COUNT = 18; 
+        const FRICTION = 0.988; 
+        const MIN_SPEED = 0.1;
+        const STONE_RADIUS_RATIO = 0.032; 
+        const INITIAL_STONE_COUNT = 7; 
+        
+        let stones = [];
+        let currentTurn = 'black';
+        let isDragging = false;
+        let dragStart = null;
+        let dragEnd = null;
+        let selectedStone = null;
+        let isMoving = false;
+
+        class Stone {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.vx = 0;
+                this.vy = 0;
+                this.radius = boardSize * STONE_RADIUS_RATIO;
+                this.mass = 1;
+                this.removed = false;
+            }
+
+            draw() {
+                if (this.removed) return;
+
+                ctx.save();
+                ctx.shadowBlur = 8;
+                ctx.shadowOffsetX = 3;
+                ctx.shadowOffsetY = 3;
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+
+                const grad = ctx.createRadialGradient(
+                    this.x - this.radius * 0.35, this.y - this.radius * 0.35, this.radius * 0.05,
+                    this.x, this.y, this.radius
+                );
+
+                if (this.color === 'black') {
+                    grad.addColorStop(0, '#666');
+                    grad.addColorStop(0.5, '#222');
+                    grad.addColorStop(1, '#000');
+                } else {
+                    grad.addColorStop(0, '#fff');
+                    grad.addColorStop(0.8, '#eee');
+                    grad.addColorStop(1, '#bbb');
+                }
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = grad;
+                ctx.fill();
+                
+                ctx.strokeStyle = this.color === 'black' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            update() {
+                if (this.removed) return;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                this.vx *= FRICTION;
+                this.vy *= FRICTION;
+
+                if (Math.abs(this.vx) < MIN_SPEED) this.vx = 0;
+                if (Math.abs(this.vy) < MIN_SPEED) this.vy = 0;
+
+                if (this.x < 0 || this.x > boardSize || this.y < 0 || this.y > boardSize) {
+                    this.removed = true;
+                    this.vx = 0;
+                    this.vy = 0;
+                }
+            }
+        }
+
+        function initGame() {
+            const availableWidth = window.innerWidth * 0.7;
+            const availableHeight = window.innerHeight * 0.75;
+            const minDim = Math.min(availableWidth, availableHeight);
+            
+            boardSize = minDim;
+            canvas.width = boardSize;
+            canvas.height = boardSize;
+
+            stones = [];
+            currentTurn = 'black';
+            isMoving = false;
+            
+            const margin = boardSize * 0.15;
+            const zigZagOffset = boardSize * 0.05; // 지그재그 편차 거리
+
+            // 흑돌 배치 (7개 지그재그)
+            for (let i = 0; i < INITIAL_STONE_COUNT; i++) {
+                // i가 짝수면 위로, 홀수면 아래로 오프셋 적용
+                const offset = (i % 2 === 0) ? -zigZagOffset : zigZagOffset;
+                stones.push(new Stone(
+                    margin + (boardSize - margin * 2) * (i / (INITIAL_STONE_COUNT - 1)),
+                    boardSize * 0.2 + offset,
+                    'black'
+                ));
+            }
+
+            // 백돌 배치 (7개 지그재그)
+            for (let i = 0; i < INITIAL_STONE_COUNT; i++) {
+                // i가 짝수면 아래로, 홀수면 위로 오프셋 적용 (흑돌과 반대 패턴)
+                const offset = (i % 2 === 0) ? zigZagOffset : -zigZagOffset;
+                stones.push(new Stone(
+                    margin + (boardSize - margin * 2) * (i / (INITIAL_STONE_COUNT - 1)),
+                    boardSize * 0.8 + offset,
+                    'white'
+                ));
+            }
+
+            updateUI();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function drawBoard() {
+            ctx.fillStyle = "#e6b97e";
+            ctx.fillRect(0, 0, boardSize, boardSize);
+
+            ctx.strokeStyle = "#4a3721";
+            ctx.lineWidth = 1.2;
+
+            const step = boardSize / (GRID_COUNT + 1);
+            for (let i = 1; i <= GRID_COUNT + 1; i++) {
+                ctx.beginPath();
+                ctx.moveTo(step, i * step);
+                ctx.lineTo(boardSize - step, i * step);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(i * step, step);
+                ctx.lineTo(i * step, boardSize - step);
+                ctx.stroke();
+            }
+
+            const dots = [4, 10, 16];
+            ctx.fillStyle = "#4a3721";
+            dots.forEach(row => {
+                dots.forEach(col => {
+                    ctx.beginPath();
+                    ctx.arc(col * step, row * step, boardSize * 0.005, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            });
+        }
+
+        function resolveCollision(s1, s2) {
+            const dx = s2.x - s1.x;
+            const dy = s2.y - s1.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            if (distance < s1.radius + s2.radius) {
+                const overlap = (s1.radius + s2.radius - distance) / 2;
+                const nx = dx / distance;
+                const ny = dy / distance;
+                
+                s1.x -= nx * overlap;
+                s1.y -= ny * overlap;
+                s2.x += nx * overlap;
+                s2.y += ny * overlap;
+
+                const v1n = s1.vx * nx + s1.vy * ny;
+                const v2n = s2.vx * nx + s2.vy * ny;
+
+                const restitution = 0.92;
+                const impulse = (2 * (v1n - v2n)) / (s1.mass + s2.mass) * restitution;
+
+                s1.vx -= impulse * s2.mass * nx;
+                s1.vy -= impulse * s2.mass * ny;
+                s2.vx += impulse * s1.mass * nx;
+                s2.vy += impulse * s1.mass * ny;
+            }
+        }
+
+        function gameLoop() {
+            ctx.clearRect(0, 0, boardSize, boardSize);
+            drawBoard();
+
+            let movingNow = false;
+
+            for (let i = 0; i < stones.length; i++) {
+                if (stones[i].removed) continue;
+                stones[i].update();
+                if (Math.abs(stones[i].vx) > 0 || Math.abs(stones[i].vy) > 0) movingNow = true;
+
+                for (let j = i + 1; j < stones.length; j++) {
+                    if (stones[j].removed) continue;
+                    resolveCollision(stones[i], stones[j]);
+                }
+            }
+
+            if (isMoving && !movingNow) {
+                isMoving = false;
+                currentTurn = currentTurn === 'black' ? 'white' : 'black';
+                checkWinner();
+                updateUI();
+            }
+
+            stones.forEach(s => s.draw());
+
+            if (isDragging && selectedStone) {
+                const dx = dragStart.x - dragEnd.x;
+                const dy = dragStart.y - dragEnd.y;
+                
+                ctx.beginPath();
+                ctx.setLineDash([8, 4]);
+                ctx.moveTo(selectedStone.x, selectedStone.y);
+                ctx.lineTo(selectedStone.x + dx, selectedStone.y + dy);
+                ctx.strokeStyle = "rgba(231, 76, 60, 0.8)";
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateUI() {
+            turnDisplay.textContent = currentTurn === 'black' ? '흑돌 턴' : '백돌 턴';
+            turnDisplay.className = `side-indicator active-${currentTurn}`;
+            
+            const blackCount = stones.filter(s => s.color === 'black' && !s.removed).length;
+            const whiteCount = stones.filter(s => s.color === 'white' && !s.removed).length;
+            
+            blackCountEl.textContent = blackCount;
+            whiteCountEl.textContent = whiteCount;
+        }
+
+        function checkWinner() {
+            const blackCount = stones.filter(s => s.color === 'black' && !s.removed).length;
+            const whiteCount = stones.filter(s => s.color === 'white' && !s.removed).length;
+
+            if (blackCount === 0 && whiteCount === 0) {
+                winnerText.textContent = "무승부!";
+                modal.style.display = 'block';
+            } else if (blackCount === 0) {
+                winnerText.textContent = "백돌 승리!";
+                modal.style.display = 'block';
+            } else if (whiteCount === 0) {
+                winnerText.textContent = "흑돌 승리!";
+                modal.style.display = 'block';
+            }
+        }
+
+        function resetGame() {
+            modal.style.display = 'none';
+            initGame();
+        }
+
+        function getPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (isMoving) return;
+            const pos = getPos(e);
+            
+            const clickedStone = stones.find(s => {
+                if (s.removed || s.color !== currentTurn) return false;
+                const dist = Math.sqrt((s.x - pos.x)**2 + (s.y - pos.y)**2);
+                return dist < s.radius * 2;
+            });
+
+            if (clickedStone) {
+                isDragging = true;
+                dragStart = pos;
+                dragEnd = pos;
+                selectedStone = clickedStone;
+            }
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            dragEnd = getPos(e);
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+
+            const dx = dragStart.x - dragEnd.x;
+            const dy = dragStart.y - dragEnd.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if (dist > 10) {
+                const maxPower = boardSize * 0.05; 
+                const powerScale = 0.12;
+                
+                let vx = dx * powerScale;
+                let vy = dy * powerScale;
+                
+                const speed = Math.sqrt(vx*vx + vy*vy);
+                if (speed > maxPower) {
+                    const ratio = maxPower / speed;
+                    vx *= ratio;
+                    vy *= ratio;
+                }
+
+                selectedStone.vx = vx;
+                selectedStone.vy = vy;
+                isMoving = true;
+            }
+
+            isDragging = false;
+            selectedStone = null;
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            const event = { touches: e.touches, clientX: e.touches[0].clientX, clientY: e.touches[0].clientY };
+            canvas.dispatchEvent(new MouseEvent('mousedown', event));
+        });
+        window.addEventListener('touchmove', (e) => {
+            if (isDragging) {
+                dragEnd = getPos(e);
+            }
+        });
+        window.addEventListener('touchend', () => {
+            window.dispatchEvent(new MouseEvent('mouseup'));
+        });
+
+        window.onload = initGame;
+        window.onresize = initGame;
+
+    </script>
+</body>
+</html>
