@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>런치박스 메이커 (Lunchbox Maker)</title>
+    <!-- Font Awesome (Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* CSS Variables based on Design Guide */
+        :root {
+            --primary-color: #FF8C00; /* Dark Orange */
+            --secondary-color: #4CAF50; /* Green */
+            --bg-color: #FDFDFD;
+            --card-bg: #FFFFFF;
+            --text-main: #2D3436;
+            --text-muted: #636E72;
+            --border-radius: 16px;
+            --shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Pretendard', 'Nanum Gothic', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        header {
+            width: 100%;
+            background-color: var(--card-bg);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #F1F2F6;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            color: var(--primary-color);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+        }
+
+        /* Home Section: Recommendation Button */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 30px 20px;
+            background: linear-gradient(135deg, #FFF9F1 0%, #FFF0E0 100%);
+            border-radius: var(--border-radius);
+            border: 1px solid #FFE0B2;
+        }
+
+        .hero-section p {
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .btn-recommend {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 140, 0, 0.4);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-recommend:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 140, 0, 0.5);
+        }
+
+        .btn-recommend:active {
+            transform: translateY(0);
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 25px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .tab {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 5px;
+            border-radius: 12px;
+            background-color: white;
+            border: 1px solid #E0E0E0;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .tab i, .tab svg {
+            font-size: 1.2rem;
+            width: 1.2rem;
+            height: 1.2rem;
+            color: var(--text-muted);
+            fill: currentColor;
+            display: block;
+        }
+
+        .tab.active {
+            border-color: var(--primary-color);
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .tab.active i, .tab.active svg {
+            color: white;
+            fill: white;
+        }
+
+        /* Recipe Detail Card */
+        #recipe-card {
+            display: none; /* Initially hidden */
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .recipe-image {
+            width: 100%;
+            height: 200px;
+            background-color: #F1F2F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+        }
+
+        .recipe-content {
+            padding: 25px;
+        }
+
+        .recipe-header {
+            margin-bottom: 20px;
+        }
+
+        .recipe-tag {
+            font-size: 0.75rem;
+            color: var(--secondary-color);
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .recipe-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .recipe-meta {
+            display: flex;
+            gap: 15px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .recipe-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .recipe-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #F1F2F6;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Ingredients Checklist */
+        .ingredient-list {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .ingredient-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            padding: 8px 12px;
+            background-color: #F8F9FA;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .ingredient-item input {
+            accent-color: var(--secondary-color);
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Steps */
+        .step-list {
+            list-style: none;
+        }
+
+        .step-item {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 15px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .step-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 50px;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🍱 런치박스 메이커</h1>
+    </header>
+
+    <div class="container">
+        <!-- Home Section -->
+        <section class="hero-section">
+            <p>오늘 점심은 무엇인가요?</p>
+            <button class="btn-recommend" id="random-btn">
+                <i class="fas fa-dice"></i> 랜덤 추천받기
+            </button>
+        </section>
+
+        <!-- Category Section -->
+        <div class="category-tabs">
+            <button class="tab active" data-cat="all">
+                <i class="fas fa-border-all"></i>
+                <span>전체</span>
+            </button>
+            <button class="tab" data-cat="ai">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 0C12.355 6.551 17.449 11.645 23.25 12C17.449 12.355 12.355 17.449 12 23.25C11.645 17.449 6.551 12.355 0.75 12C6.551 11.645 11.645 6.551 12 0Z"/>
+                </svg>
+                <span>AI 추천</span>
+            </button>
+            <button class="tab" data-cat="speed">
+                <i class="fas fa-bolt"></i>
+                <span>초스피드</span>
+            </button>
+            <button class="tab" data-cat="diet">
+                <i class="fas fa-leaf"></i>
+                <span>다이어트</span>
+            </button>
+            <button class="tab" data-cat="budget">
+                <i class="fas fa-wallet"></i>
+                <span>가성비</span>
+            </button>
+            <button class="tab" data-cat="prep">
+                <i class="fas fa-clock"></i>
+                <span>전날준비</span>
+            </button>
+        </div>
+
+        <!-- Recipe Display Area -->
+        <div id="recipe-container">
+            <div class="empty-state" id="empty-state">
+                <i class="fas fa-utensils"></i>
+                <p>버튼을 눌러 오늘의 도시락 메뉴를 추천받으세요!</p>
+            </div>
+
+            <article id="recipe-card">
+                <div class="recipe-image" id="recipe-emoji">🍱</div>
+                <div class="recipe-content">
+                    <div class="recipe-header">
+                        <span class="recipe-tag" id="recipe-tag">CATEGORY</span>
+                        <h2 class="recipe-title" id="recipe-title">도시락 메뉴명</h2>
+                        <div class="recipe-meta">
+                            <span id="recipe-time"><i class="far fa-clock"></i> 15분</span>
+                            <span id="recipe-diff"><i class="fas fa-signal"></i> 난이도 하</span>
+                        </div>
+                    </div>
+
+                    <!-- Ingredients -->
+                    <div class="recipe-section">
+                        <h3 class="section-title"><i class="fas fa-shopping-basket"></i> 필요한 재료 확인</h3>
+                        <div class="ingredient-list" id="ingredient-list">
+                            <!-- JS will inject ingredients here -->
+                        </div>
+                    </div>
+
+                    <!-- Steps -->
+                    <div class="recipe-section">
+                        <h3 class="section-title"><i class="fas fa-list-ol"></i> 조리 순서</h3>
+                        <div class="step-list" id="step-list">
+                            <!-- JS will inject steps here -->
+                        </div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+
+    <script>
+        // --- Recipe Data ---
+        const recipes = [
+            { id: 1, title: "참치마요 덮밥 도시락", category: "speed", emoji: "🐟", time: "10분", difficulty: "하", tag: "초스피드 (10분 컷)", ingredients: ["참치캔 1개", "계란 1알", "마요네즈", "김가루", "단무지"], steps: ["참치 기름을 빼고 마요네즈와 버무립니다.", "계란은 스크램블 에그로 만듭니다.", "밥 위에 모든 재료를 올리고 김가루를 뿌립니다."] },
+            { id: 2, title: "닭가슴살 샐러드 세트", category: "diet", emoji: "🥗", time: "15분", difficulty: "하", tag: "다이어트 (저칼로리)", ingredients: ["닭가슴살 100g", "양상추", "방울토마토", "오리엔탈 드레싱"], steps: ["닭가슴살을 삶거나 굽습니다.", "채소는 씻어서 물기를 제거합니다.", "소스는 먹기 직전에 뿌려 신선함을 유지합니다."] },
+            { id: 3, title: "간장 계란 볶음밥", category: "budget", emoji: "🍳", time: "10분", difficulty: "하", tag: "가성비 (냉파)", ingredients: ["찬밥 1공기", "계란 2알", "대파", "간장 1큰술", "식용유"], steps: ["팬에 파기름을 냅니다.", "계란을 넣고 스크램블을 만든 뒤 밥을 넣습니다.", "간장으로 간을 맞추며 고르게 볶습니다."] },
+            { id: 4, title: "소불고기 도시락", category: "prep", emoji: "🥩", time: "20분", difficulty: "중", tag: "전날 준비 가능", ingredients: ["소불고기용 고기", "간장 양념", "양파", "당근", "버섯"], steps: ["전날 밤 고기를 양념에 재워둡니다.", "아침에는 팬에 고기와 야채를 볶기만 합니다.", "충분히 식힌 후 도시락통에 담습니다."] },
+            { id: 5, title: "두부 스테이크 도시락", category: "diet", emoji: "🍢", time: "20분", difficulty: "중", tag: "다이어트 (저칼로리)", ingredients: ["두부 1모", "전분가루", "간장소스", "아스파라거스"], steps: ["두부 물기를 빼고 전분가루를 입혀 굽습니다.", "간장소스를 졸여 두부 위에 끼얹습니다.", "익힌 채소와 함께 곁들입니다."] },
+            { id: 6, title: "스팸무스비 세트", category: "speed", emoji: "🍙", time: "15분", difficulty: "하", tag: "초스피드 (10분 컷)", ingredients: ["스팸", "김밥용 김", "계란", "참기름"], steps: ["스팸을 얇게 썰어 노릇하게 굽습니다.", "계란 지단을 두껍게 만듭니다.", "스팸 캔을 틀 삼아 밥과 재료를 쌓고 김으로 감쌉니다."] },
+            { id: 7, title: "훈제오리 무쌈말이", category: "speed", emoji: "🦆", time: "10분", difficulty: "하", tag: "초스피드 (조리 최소화)", ingredients: ["훈제오리 150g", "쌈무 1팩", "무순", "머스타드 소스"], steps: ["훈제오리를 팬에 가볍게 굽거나 전자레인지에 데웁니다.", "쌈무 위에 오리 고기와 무순을 올립니다.", "돌돌 말아준 뒤 머스타드 소스를 곁들입니다."] },
+            { id: 8, title: "베이컨 팽이버섯 말이", category: "speed", emoji: "🥓", time: "12분", difficulty: "하", tag: "초스피드 (간단 가열)", ingredients: ["베이컨 1봉", "팽이버섯 1봉", "후추"], steps: ["팽이버섯 밑동을 자르고 베이컨 위에 적당량 올립니다.", "베이컨을 돌돌 말아 끝부분이 바닥으로 가게 팬에 올립니다.", "노릇하게 굴려가며 구워주면 완성됩니다."] },
+            { id: 9, title: "크래미 유부초밥", category: "speed", emoji: "🥟", time: "10분", difficulty: "하", tag: "초스피드 (버무리기)", ingredients: ["시판 유부초밥 키트", "크래미 3개", "마요네즈 1큰술"], steps: ["크래미를 잘게 찢어 마요네즈와 버무립니다.", "밥에 유부초밥 키트의 양념을 넣고 섞습니다.", "유부 피에 밥을 채우고 위에 크래미 토핑을 올립니다."] },
+            { id: 10, title: "간단 어묵 볶음 덮밥", category: "speed", emoji: "🍢", time: "8분", difficulty: "하", tag: "초스피드 (한그릇)", ingredients: ["사각어묵 2장", "양파 1/4개", "굴소스 1큰술", "올리고당 0.5큰술"], steps: ["어묵과 양파를 채 썹니다.", "팬에 식용유를 두르고 양파와 어묵을 함께 볶습니다.", "굴소스와 올리고당을 넣어 빠르게 볶아 밥 위에 올립니다."] },
+            { id: 11, title: "계란말이 주먹밥", category: "speed", emoji: "🍙", time: "12분", difficulty: "하", tag: "초스피드 (한입 도시락)", ingredients: ["밥 1공기", "계란 2알", "김자반 2큰술", "참기름"], steps: ["밥에 김자반과 참기름을 섞어 작은 타원형으로 뭉칩니다.", "계란을 풀어 팬에 얇게 깔고 반쯤 익었을 때 밥을 올립니다.", "계란으로 밥을 돌돌 말아 굴려가며 익힙니다."] },
+            { id: 12, title: "무지개 월남쌈 박스", category: "prep", emoji: "🌈", time: "5분 (준비완료시)", difficulty: "하", tag: "전날준비 (신선)", ingredients: ["라이스페이퍼", "파프리카(전날손질)", "오이(전날손질)", "새우(데침)", "땅콩소스"], steps: ["전날 모든 채소를 가늘게 채 썰어 밀폐용기에 담아둡니다.", "새우는 데쳐서 차갑게 식혀둡니다.", "아침에는 라이스페이퍼와 소스만 챙겨서 나갑니다."] },
+            { id: 13, title: "베이컨 메추리알 장조림", category: "prep", emoji: "🥚", time: "0분 (포장만)", difficulty: "하", tag: "전날준비 (밑반찬)", ingredients: ["삶은 메추리알", "베이컨", "간장 3큰술", "물 1컵", "설탕 1큰술"], steps: ["전날 저녁 메추리알을 베이컨으로 말아 간장물에 졸여둡니다.", "충분히 식힌 후 냉장 보관합니다.", "아침에는 도시락통에 옮겨 담기만 하면 끝!"] },
+            { id: 14, title: "오버나이트 오트밀 박스", category: "prep", emoji: "🥣", time: "0분 (포장만)", difficulty: "하", tag: "전날준비 (초간편)", ingredients: ["오트밀 1/2컵", "우유 또는 요거트", "냉동 블루베리", "견과류", "꿀"], steps: ["전날 밤 용기에 오트밀과 우유를 넣고 섞습니다.", "그 위에 과일과 꿀을 올리고 뚜껑을 닫습니다.", "냉장고에 넣어두면 아침에 바로 들고 나갈 수 있습니다."] },
+            { id: 15, title: "소시지 야채볶음 도시락", category: "prep", emoji: "🌭", time: "3분 (데우기)", difficulty: "하", tag: "전날준비 (든든)", ingredients: ["비엔나 소시지", "파프리카", "양파", "케첩 2큰술", "고추장 0.5큰술"], steps: ["전날 저녁 소시지와 채소를 케첩 양념에 볶아둡니다.", "완전히 식힌 후 냉장 보관합니다.", "아침에 전자레인지에 살짝 데워 밥 옆에 담습니다."] },
+            { id: 16, title: "참치 두부 스테이크", category: "prep", emoji: "🍔", time: "8분 (굽기만)", difficulty: "중", tag: "전날준비 (반죽완료)", ingredients: ["참치캔 1개", "두부 1/2모", "다진 양파", "계란 1알", "부침가루"], steps: ["전날 저녁 모든 재료를 섞어 반죽을 만들어 둡니다.", "아침에는 팬에 기름을 두르고 노릇하게 굽기만 합니다.", "케첩이나 스테이크 소스를 곁들여 포장합니다."] },
+            
+            // 기존 Budget 레시피 (17~31)
+            { id: 17, title: "폭신폭신 계란 샌드위치", category: "budget", emoji: "🥪", time: "12분", difficulty: "하", tag: "가성비 (초저렴)", ingredients: ["식빵 2장", "계란 2알", "마요네즈 1.5큰술", "설탕 0.5큰술", "후추"], steps: ["계란을 완숙으로 삶아 껍질을 까고 으깹니다.", "마요네즈, 설탕, 후추를 넣고 고르게 섞습니다.", "식빵 사이에 속재료를 듬뿍 넣고 가장자리를 자릅니다."] },
+            { id: 18, title: "매콤 어묵 김밥", category: "budget", emoji: "🍙", time: "15분", difficulty: "하", tag: "가성비 (어묵활용)", ingredients: ["사각어묵 2장", "단무지", "김밥용 김", "간장 1큰술", "고춧가루 1큰술"], steps: ["어묵을 얇게 채 썰어 간장, 고춧가루, 설탕에 볶습니다.", "김 위에 밥을 펴고 볶은 어묵과 단무지를 올립니다.", "돌돌 말아 참기름을 바른 뒤 한입 크기로 썹니다."] },
+            { id: 19, title: "팽이버섯 전 도시락", category: "budget", emoji: "🍄", time: "10분", difficulty: "하", tag: "가성비 (냉장고파먹기)", ingredients: ["팽이버섯 1봉", "계란 2알", "다진 파", "소금", "식용유"], steps: ["팽이버섯 밑동을 자르고 2~3cm 길이로 썹니다.", "계란물에 버섯, 파, 소금을 넣고 섞습니다.", "팬에 한 숟가락씩 떠 넣어 노릇하게 부칩니다."] },
+            { id: 20, title: "마늘종 베이컨 볶음밥", category: "budget", emoji: "🍚", time: "10분", difficulty: "하", tag: "가성비 (식감천재)", ingredients: ["밥 1공기", "마늘종 5대", "베이컨 1장", "굴소스 1큰술"], steps: ["마늘종과 베이컨을 잘게 썹니다.", "팬에 베이컨을 먼저 볶다 마늘종을 넣어 향을 냅니다.", "밥과 굴소스를 넣고 고슬고슬하게 볶아 마무리합니다."] },
+            { id: 21, title: "두부 제육 볶음", category: "budget", emoji: "🥘", time: "15분", difficulty: "중", tag: "가성비 (고단백)", ingredients: ["두부 1/2모", "돼지 뒷다리살 100g", "양파", "고추장 1큰술", "고춧가루 1큰술"], steps: ["두부는 깍둑썰기하여 팬에 먼저 앞뒤로 굽습니다.", "뒷다리살과 양파를 넣고 양념장과 함께 볶습니다.", "마지막에 구운 두부를 넣어 양념이 배게 버무립니다."] },
+            { id: 22, title: "두부 조림 덮밥", category: "budget", emoji: "🍲", time: "12분", difficulty: "하", tag: "가성비 (단백질 보충)", ingredients: ["두부 1/2모", "대파", "간장 2큰술", "고춧가루 0.5큰술", "올리고당 1큰술"], steps: ["두부를 한입 크기로 썰어 팬에 앞뒤로 노릇하게 굽습니다.", "간장, 고춧가루, 올리고당, 물 조금을 섞어 양념장을 만듭니다.", "구운 두부에 양념장을 붓고 졸여준 뒤 밥 위에 올립니다."] },
+            { id: 23, title: "양배추 계란 샌드위치", category: "budget", emoji: "🥪", time: "10분", difficulty: "하", tag: "가성비 (포만감 최고)", ingredients: ["식빵 2장", "양배추 한줌", "계란 2알", "케첩", "마요네즈"], steps: ["양배추를 가늘게 채 썰어 계란물과 섞습니다.", "팬에 식빵 크기에 맞춰 양배추 계란물을 앞뒤로 굽습니다.", "구운 식빵 사이에 패티를 넣고 케첩과 마요네즈를 뿌립니다."] },
+            { id: 24, title: "콩나물 불고기 도시락", category: "budget", emoji: "🌱", time: "15분", difficulty: "중", tag: "가성비 (푸짐한 한끼)", ingredients: ["대패 삼겹살 100g", "콩나물 1봉", "대파", "고추장 1.5큰술", "진간장 1큰술"], steps: ["팬에 씻은 콩나물을 깔고 그 위에 고기와 대파를 올립니다.", "양념장을 얹고 고기가 익을 때까지 센 불에서 볶습니다.", "콩나물에서 나오는 수분으로 국물이 자작해지면 완성입니다."] },
+            { id: 25, title: "버터 간장 당면 볶음", category: "budget", emoji: "🍜", time: "10분", difficulty: "하", tag: "가성비 (이색 메뉴)", ingredients: ["불린 당면", "버터 1조각", "간장 1.5큰술", "설탕 0.5큰술", "후추"], steps: ["불린 당면을 끓는 물에 살짝 삶아 건집니다.", "팬에 버터를 녹이고 당면을 넣어 볶습니다.", "간장, 설탕으로 간을 하고 마지막에 후추를 뿌려 완성합니다."] },
+            { id: 26, title: "애호박 채전 도시락", category: "budget", emoji: "🥒", time: "12분", difficulty: "하", tag: "가성비 (제철 채소)", ingredients: ["애호박 1/2개", "부침가루 3큰술", "소금 한꼬집", "식용유"], steps: ["애호박을 얇게 채 썹니다.", "채 썬 호박에 부침가루와 소금을 넣고 버무립니다. (물은 생략 가능)", "팬에 한 입 크기로 바삭하게 부쳐냅니다."] },
+            { id: 27, title: "볶음김치 참치 덮밥", category: "budget", emoji: "🥘", time: "10분", difficulty: "하", tag: "가성비 (자취생 필수)", ingredients: ["신김치 1컵", "참치캔 1/2개", "계란 1알", "참기름 1스푼", "설탕 0.5스푼"], steps: ["팬에 기름을 두르고 다진 김치와 설탕을 넣어 볶습니다.", "김치가 숨이 죽으면 기름 뺀 참치를 넣고 마저 볶습니다.", "그릇에 밥, 볶음김치, 계란프라이를 올립니다."] },
+            { id: 28, title: "마가린 간장 계란밥", category: "budget", emoji: "🧈", time: "5분", difficulty: "하", tag: "가성비 (초간단)", ingredients: ["따뜻한 밥 1공기", "계란 1알", "마가린(또는 버터) 1조각", "진간장 1.5스푼", "참깨"], steps: ["계란을 반숙 프라이로 조리합니다.", "따뜻한 밥 중앙에 마가린과 간장을 넣고 계란으로 덮습니다.", "먹기 직전에 슥슥 비벼 먹습니다."] },
+            { id: 29, title: "양파 카레 덮밥", category: "budget", emoji: "🍛", time: "15분", difficulty: "하", tag: "가성비 (풍미가득)", ingredients: ["양파 1개", "고형 카레 1조각", "물 1.5컵", "식용유 2스푼"], steps: ["양파를 얇게 채 썰어 팬에 갈색이 될 때까지 약불에서 오래 볶습니다.", "물을 붓고 끓어오르면 고형 카레를 풀어 넣습니다.", "걸쭉해질 때까지 졸인 후 밥 위에 얹어냅니다."] },
+            { id: 30, title: "멸치 볶음 주먹밥", category: "budget", emoji: "🍙", time: "5분", difficulty: "하", tag: "가성비 (냉장고 털기)", ingredients: ["잔멸치 볶음 3큰술", "밥 1공기", "마요네즈 1스푼", "참기름 1스푼", "김가루"], steps: ["볼에 따뜻한 밥과 남은 멸치 볶음, 마요네즈, 참기름을 넣고 섞습니다.", "손으로 동그랗고 단단하게 주먹밥 모양으로 뭉쳐줍니다.", "겉면에 김가루를 살짝 묻혀 완성합니다."] },
+            { id: 31, title: "비엔나 케첩 볶음밥", category: "budget", emoji: "🍚", time: "10분", difficulty: "하", tag: "가성비 (초딩입맛)", ingredients: ["비엔나 소시지 5개", "밥 1공기", "케첩 2스푼", "굴소스 0.5스푼", "계란 1알"], steps: ["소시지를 작게 썰어 팬에 노릇하게 볶습니다.", "밥과 케첩, 굴소스를 넣고 고르게 색이 나도록 볶아줍니다.", "볶음밥을 그릇에 담고 부드러운 스크램블 에그를 곁들입니다."] },
+
+            // 기존 Prep 레시피 (32~36)
+            { id: 32, title: "감자 샐러드 샌드위치", category: "prep", emoji: "🥪", time: "3분 (바르기만)", difficulty: "하", tag: "전날준비 (든든한 아침)", ingredients: ["식빵 2장", "감자 2개", "삶은 계란 1개", "마요네즈 3큰술", "오이 1/4개"], steps: ["전날 밤, 감자와 계란을 삶아 으깨고 절인 오이와 마요네즈를 섞어 샐러드를 만듭니다.", "만든 샐러드는 밀폐용기에 담아 냉장 보관합니다.", "아침에는 식빵 사이에 샐러드를 도톰하게 발라 포장하기만 하면 완성!"] },
+            { id: 33, title: "마약 계란장 덮밥", category: "prep", emoji: "🥚", time: "1분 (얹기만)", difficulty: "하", tag: "전날준비 (밥도둑)", ingredients: ["밥 1공기", "반숙란 2개", "간장 1/2컵", "물 1/2컵", "올리고당, 참기름"], steps: ["전날 밤, 간장과 물, 올리고당 등을 섞은 장에 반숙란을 담가 냉장고에 둡니다.", "아침에 도시락통에 따뜻한 밥을 담습니다.", "계란장 1~2알과 간장 국물, 참기름을 밥 위에 살짝 뿌려 챙겨갑니다."] },
+            { id: 34, title: "바질 토마토 푸실리 (냉파스타)", category: "prep", emoji: "🍝", time: "0분 (포장만)", difficulty: "하", tag: "전날준비 (레스토랑 감성)", ingredients: ["푸실리 파스타 1인분", "방울토마토", "바질 페스토 2큰술", "올리브오일"], steps: ["전날 밤 푸실리를 푹 삶아 찬물에 헹궈 물기를 뺍니다.", "바질 페스토, 올리브오일, 반으로 썬 방울토마토와 함께 푸실리를 버무립니다.", "냉장고에 차갑게 보관했다가 아침에 그대로 들고 나갑니다."] },
+            { id: 35, title: "간장 찜닭 도시락", category: "prep", emoji: "🍗", time: "5분 (데우기)", difficulty: "중", tag: "전날준비 (메인요리)", ingredients: ["순살 닭고기", "감자 1개", "시판 찜닭 양념", "당면(선택)"], steps: ["전날 저녁 닭고기와 감자를 간장 양념에 푹 끓여 찜닭을 완성합니다.", "완전히 식힌 후 전자레인지 사용이 가능한 도시락 용기에 담아 냉장 보관합니다.", "아침에 용기째 챙겨 점심시간에 따뜻하게 데워 먹습니다."] },
+            { id: 36, title: "유부초밥 & 참치샐러드", category: "prep", emoji: "🍱", time: "5분 (채우기만)", difficulty: "하", tag: "전날준비 (피크닉 기분)", ingredients: ["시판 유부초밥 세트", "밥 1.5공기", "참치캔 1/2개", "마요네즈 1큰술"], steps: ["전날 밤 기름을 뺀 참치와 마요네즈를 섞어 토핑용 참치샐러드를 만들어 둡니다.", "아침에 밥에 식초 소스를 버무려 유부 안에 빠르게 채워 넣습니다.", "채워진 유부초밥 위에 미리 만들어둔 참치샐러드를 얹어 완성합니다."] },
+
+            // --- 이번에 추가된 새로운 Speed (초스피드) 레시피 5종 (37~41) ---
+            { 
+                id: 37, 
+                title: "명란 마요 덮밥", 
+                category: "speed", 
+                emoji: "🍚", 
+                time: "5분", 
+                difficulty: "하", 
+                tag: "초스피드 (불 없이)", 
+                ingredients: ["밥 1공기", "명란젓 1스푼", "마요네즈 2스푼", "김가루", "참기름"], 
+                steps: ["명란젓은 칼로 껍질을 갈라 알만 긁어 모은 뒤 마요네즈와 섞습니다.", "도시락통에 따뜻한 밥을 담고 그 위에 명란마요를 듬뿍 올립니다.", "참기름을 살짝 두르고 김가루를 솔솔 뿌려주면 완성입니다."] 
+            },
+            { 
+                id: 38, 
+                title: "토마토 계란 볶음", 
+                category: "speed", 
+                emoji: "🍅", 
+                time: "10분", 
+                difficulty: "하", 
+                tag: "초스피드 (단백질 만점)", 
+                ingredients: ["방울토마토 1줌", "계란 2알", "대파 1줌", "굴소스 0.5스푼", "식용유"], 
+                steps: ["팬에 기름을 두르고 다진 대파를 볶아 파기름을 낸 뒤 계란을 넣어 스크램블 합니다.", "계란을 한쪽으로 밀어두고, 반으로 썬 방울토마토를 넣어 가볍게 볶아줍니다.", "굴소스로 간을 맞추며 부드럽게 섞어 밥 옆에 듬뿍 담아냅니다."] 
+            },
+            { 
+                id: 39, 
+                title: "전자레인지 계란찜 덮밥", 
+                category: "speed", 
+                emoji: "🥚", 
+                time: "8분", 
+                difficulty: "하", 
+                tag: "초스피드 (전자레인지)", 
+                ingredients: ["계란 2알", "물 1/2컵", "참치액(또는 소금) 1스푼", "참기름", "밥 1공기"], 
+                steps: ["전자레인지용 그릇에 계란, 물, 참치액을 넣고 멍울 없이 잘 풀어줍니다.", "랩을 씌우고 포크로 구멍을 몇 개 뚫어준 뒤 전자레인지에 3~4분 돌립니다.", "완성된 포슬포슬한 계란찜을 밥 위에 얹고 고소한 참기름을 둘러줍니다."] 
+            },
+            { 
+                id: 40, 
+                title: "치즈 비엔나 토스트", 
+                category: "speed", 
+                emoji: "🌭", 
+                time: "10분", 
+                difficulty: "하", 
+                tag: "초스피드 (간편식)", 
+                ingredients: ["식빵 2장", "비엔나소시지 4개", "슬라이스 치즈 1장", "케첩", "마요네즈"], 
+                steps: ["식빵 한 장에 케첩을 얇게 바르고 슬라이스 치즈를 올립니다.", "비엔나소시지를 얇게 편 썰어 치즈 위에 고르게 올리고 마요네즈를 살짝 뿌립니다.", "나머지 식빵으로 덮은 뒤 에어프라이어나 팬에 겉이 바삭해지도록 구워냅니다."] 
+            },
+            { 
+                id: 41, 
+                title: "참치 쌈장 양배추쌈", 
+                category: "speed", 
+                emoji: "🥬", 
+                time: "10분", 
+                difficulty: "하", 
+                tag: "초스피드 (건강식)", 
+                ingredients: ["양배추 1/4통", "참치캔 1/2개", "쌈장 2스푼", "다진 양파", "밥 1공기"], 
+                steps: ["씻은 양배추를 전자레인지용 용기나 비닐에 넣고 5~6분간 돌려 부드럽게 찝니다.", "기름을 쫙 뺀 참치와 쌈장, 다진 양파, 참기름을 섞어 특제 참치쌈장을 만듭니다.", "찐 양배추를 넓게 펴고 밥과 참치쌈장을 올려 돌돌 말아 도시락에 차곡차곡 담습니다."] 
+            },
+            // --- 두 번째 추가된 새로운 Speed (초스피드) 레시피 5종 (42~46) ---
+            { 
+                id: 42, 
+                title: "참치 옥수수 비빔밥", 
+                category: "speed", 
+                emoji: "🌽", 
+                time: "5분", 
+                difficulty: "하", 
+                tag: "초스피드 (불 없이)", 
+                ingredients: ["밥 1공기", "참치캔 1/2개", "통조림 옥수수 2스푼", "마요네즈", "간장 0.5스푼"], 
+                steps: ["참치와 옥수수는 체에 밭쳐 물기와 기름을 빼줍니다.", "따뜻한 밥 위에 참치와 옥수수를 올립니다.", "간장과 마요네즈를 뿌려 슥슥 비벼 먹습니다."] 
+            },
+            { 
+                id: 43, 
+                title: "전자레인지 컵피자", 
+                category: "speed", 
+                emoji: "🍕", 
+                time: "7분", 
+                difficulty: "하", 
+                tag: "초스피드 (간식 겸용)", 
+                ingredients: ["식빵 1장", "토마토소스 2스푼", "비엔나 소시지 2개", "모짜렐라 치즈", "옥수수콘"], 
+                steps: ["전자레인지용 컵이나 그릇에 식빵을 가위로 잘게 잘라 넣습니다.", "그 위에 토마토소스를 바르고 얇게 썬 소시지와 옥수수를 올립니다.", "모짜렐라 치즈를 듬뿍 얹고 치즈가 녹을 때까지 전자레인지에 2~3분 돌립니다."] 
+            },
+            { 
+                id: 44, 
+                title: "컵누들 볶음밥", 
+                category: "speed", 
+                emoji: "🍜", 
+                time: "8분", 
+                difficulty: "하", 
+                tag: "초스피드 (SNS 핫템)", 
+                ingredients: ["컵누들 1개", "밥 1/2공기", "계란 1알", "대파", "식용유"], 
+                steps: ["컵누들 면을 지퍼백에 넣고 잘게 부순 뒤 컵에 다시 넣고 물을 면이 잠길 만큼만 붓습니다.", "팬에 기름을 두르고 파기름을 낸 뒤 계란 스크램블을 만듭니다.", "밥과 불린 컵누들(국물 포함)을 팬에 넣고 수분이 날아갈 때까지 볶습니다."] 
+            },
+            { 
+                id: 45, 
+                title: "아보카도 명란 비빔밥", 
+                category: "speed", 
+                emoji: "🥑", 
+                time: "5분", 
+                difficulty: "하", 
+                tag: "초스피드 (고급진 한끼)", 
+                ingredients: ["밥 1공기", "아보카도 1/2개", "명란젓 1스푼", "계란 1알", "참기름"], 
+                steps: ["아보카도는 씨를 제거하고 껍질을 벗겨 얇게 슬라이스합니다.", "계란은 반숙 프라이로 준비합니다.", "밥 위에 아보카도, 껍질을 제거한 명란젓, 계란프라이를 올리고 참기름을 두릅니다."] 
+            },
+            { 
+                id: 46, 
+                title: "게맛살 오이 냉채", 
+                category: "speed", 
+                emoji: "🥒", 
+                time: "5분", 
+                difficulty: "하", 
+                tag: "초스피드 (상큼한 맛)", 
+                ingredients: ["크래미(게맛살) 3개", "오이 1/2개", "연겨자 0.5스푼", "식초 1스푼", "설탕 1스푼"], 
+                steps: ["오이는 얇게 채 썰고, 크래미는 결대로 잘게 찢어줍니다.", "연겨자, 식초, 설탕을 섞어 톡 쏘는 소스를 만듭니다.", "볼에 오이와 크래미를 넣고 소스에 가볍게 버무려 완성합니다."] 
+            },
+            // --- 세 번째 추가된 새로운 Budget (가성비) 레시피 4종 (47~50) ---
+            {
+                id: 47,
+                title: "양배추 굴소스 덮밥",
+                category: "budget",
+                emoji: "🥬",
+                time: "10분",
+                difficulty: "하",
+                tag: "가성비 (천원의 행복)",
+                ingredients: ["양배추 1/4통", "계란 1알", "굴소스 1.5스푼", "참기름", "밥 1공기"],
+                steps: ["양배추를 가늘게 채 썰어 준비합니다.", "팬에 기름을 두르고 양배추가 숨이 죽을 때까지 볶다가 굴소스를 넣어 간을 합니다.", "가운데를 비워 계란 프라이를 반숙으로 익힌 뒤 밥 위에 얹어 참기름을 두릅니다."]
+            },
+            {
+                id: 48,
+                title: "냉동만두 볶음밥",
+                category: "budget",
+                emoji: "🥟",
+                time: "10분",
+                difficulty: "하",
+                tag: "가성비 (냉장고 파먹기)",
+                ingredients: ["냉동만두 3~4개", "밥 1공기", "대파 1줌", "간장 1스푼", "참기름"],
+                steps: ["냉동만두를 전자레인지에 살짝 해동한 뒤 가위로 잘게 잘라줍니다.", "팬에 식용유를 두르고 다진 파를 볶아 파기름을 낸 뒤, 자른 만두를 넣어 함께 볶습니다.", "밥과 간장을 넣고 고르게 볶은 뒤 참기름으로 마무리하여 도시락에 담습니다."]
+            },
+            {
+                id: 49,
+                title: "스팸 간장 마요 덮밥",
+                category: "budget",
+                emoji: "🥓",
+                time: "12분",
+                difficulty: "하",
+                tag: "가성비 (단짠단짠)",
+                ingredients: ["스팸(작은것) 1/2통", "계란 2알", "양파 1/2개", "간장 2스푼", "마요네즈"],
+                steps: ["스팸은 깍둑썰기하여 마른 팬에 노릇하게 굽고, 계란은 부드러운 스크램블 에그로 만듭니다.", "채 썬 양파를 간장 2스푼, 물 2스푼, 설탕 0.5스푼과 함께 졸여줍니다.", "도시락 밥 위에 졸인 양파, 스팸, 계란을 예쁘게 담고 마요네즈를 뿌려줍니다."]
+            },
+            {
+                id: 50,
+                title: "가지 간장 덮밥",
+                category: "budget",
+                emoji: "🍆",
+                time: "15분",
+                difficulty: "하",
+                tag: "가성비 (건강한 단짠)",
+                ingredients: ["가지 1개", "대파 1줌", "간장 2스푼", "굴소스 1스푼", "설탕 0.5스푼"],
+                steps: ["가지를 반으로 갈라 도톰하게 어슷썰기 하고, 양념장(간장, 굴소스, 설탕, 물 약간)을 섞어둡니다.", "팬에 식용유를 두르고 파기름을 낸 뒤, 가지를 넣어 수분이 나오며 부드러워질 때까지 볶습니다.", "양념장을 붓고 빠르게 졸이듯 볶아낸 뒤 따뜻한 밥 위에 얹어 완성합니다."]
+            }
+        ];
+
+        // --- App Logic ---
+        const randomBtn = document.getElementById('random-btn');
+        const tabs = document.querySelectorAll('.tab');
+        const emptyState = document.getElementById('empty-state');
+        const recipeCard = document.getElementById('recipe-card');
+        
+        let currentFilter = 'all';
+        const apiKey = ""; // Execution environment provides this
+
+        // Fetch AI Recipe with Exponential Backoff
+        async function fetchAIRecipe(retries = 5) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: "직장인 도시락으로 싸가기 좋은 새롭고 창의적인 레시피 1개를 추천해줘. 냉장고에 있는 흔한 재료를 활용한 독창적이고 맛있는 조합이면 좋겠어." }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            id: { type: "INTEGER", description: "임의의 고유 숫자" },
+                            title: { type: "STRING", description: "레시피 이름" },
+                            category: { type: "STRING", description: "무조건 'ai'로 설정" },
+                            emoji: { type: "STRING", description: "음식과 어울리는 이모지 1개" },
+                            time: { type: "STRING", description: "예: '15분'" },
+                            difficulty: { type: "STRING", description: "상, 중, 하 중 택 1" },
+                            tag: { type: "STRING", description: "예: 'AI 창작 레시피'" },
+                            ingredients: { type: "ARRAY", items: { type: "STRING" } },
+                            steps: { type: "ARRAY", items: { type: "STRING" } }
+                        },
+                        required: ["id", "title", "category", "emoji", "time", "difficulty", "tag", "ingredients", "steps"]
+                    }
+                }
+            };
+
+            let delay = 1000;
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (!response.ok) throw new Error('API Error');
+                    const data = await response.json();
+                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (text) return JSON.parse(text);
+                } catch (err) {
+                    if (i === retries - 1) throw err;
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // Filter Selection
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentFilter = tab.dataset.cat;
+                
+                recommend();
+            });
+        });
+
+        // Recommendation Logic
+        async function recommend() {
+            if (currentFilter === 'ai') {
+                // Show loading state
+                recipeCard.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.innerHTML = '<i class="fas fa-robot fa-bounce" style="font-size: 3rem; margin-bottom: 15px; color: #9C27B0;"></i><p style="color: var(--text-muted); line-height: 1.5;">AI 셰프가 창의적인 레시피를 고민 중입니다...<br><small>(약 3~5초 정도 소요됩니다)</small></p>';
+                
+                try {
+                    const aiRecipe = await fetchAIRecipe();
+                    // 사용자가 대기 중에 다른 탭으로 이동하지 않았을 경우에만 표시
+                    if (currentFilter === 'ai') { 
+                        displayRecipe(aiRecipe);
+                    }
+                } catch (error) {
+                    if (currentFilter === 'ai') {
+                        emptyState.innerHTML = '<i class="fas fa-exclamation-triangle" style="font-size: 3rem; margin-bottom: 15px; color: #FF5252;"></i><p style="color: var(--text-muted);">AI 연결에 실패했습니다. 잠시 후 다시 시도해주세요.</p>';
+                    }
+                }
+                return;
+            }
+
+            const pool = currentFilter === 'all' 
+                ? recipes 
+                : recipes.filter(r => r.category === currentFilter);
+            
+            if (pool.length === 0) return;
+
+            const randomRecipe = pool[Math.floor(Math.random() * pool.length)];
+            displayRecipe(randomRecipe);
+        }
+
+        // Display UI
+        function displayRecipe(recipe) {
+            emptyState.style.display = 'none';
+            recipeCard.style.display = 'block';
+
+            document.getElementById('recipe-emoji').textContent = recipe.emoji;
+            document.getElementById('recipe-tag').textContent = recipe.tag;
+            document.getElementById('recipe-title').textContent = recipe.title;
+            document.getElementById('recipe-time').innerHTML = `<i class="far fa-clock"></i> ${recipe.time}`;
+            document.getElementById('recipe-diff').innerHTML = `<i class="fas fa-signal"></i> 난이도 ${recipe.difficulty}`;
+
+            // Ingredients
+            const ingList = document.getElementById('ingredient-list');
+            ingList.innerHTML = '';
+            recipe.ingredients.forEach(ing => {
+                const label = document.createElement('label');
+                label.className = 'ingredient-item';
+                label.innerHTML = `<input type="checkbox"> <span>${ing}</span>`;
+                ingList.appendChild(label);
+            });
+
+            // Steps
+            const stepList = document.getElementById('step-list');
+            stepList.innerHTML = '';
+            recipe.steps.forEach((step, index) => {
+                const div = document.createElement('div');
+                div.className = 'step-item';
+                div.innerHTML = `<span class="step-number">${index + 1}</span> ${step}`;
+                stepList.appendChild(div);
+            });
+
+            // Save to sessionStorage
+            sessionStorage.setItem('last_viewed_recipe', JSON.stringify(recipe));
+        }
+
+        randomBtn.addEventListener('click', recommend);
+
+        // Check for last viewed on load
+        window.addEventListener('load', () => {
+            const last = sessionStorage.getItem('last_viewed_recipe');
+            if (last) {
+                displayRecipe(JSON.parse(last));
+            }
+        });
+    </script>
+</body>
+</html>
